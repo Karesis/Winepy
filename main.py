@@ -1,4 +1,113 @@
-#!/usr/bin/env python3
+def computer_vs_computer_demo():
+    """Demo mode: Computer vs Computer"""
+    clear_screen()
+    print("\n===== COMPUTER VS COMPUTER DEMO =====\n")
+    print("Watch two AI players compete against each other!")
+    print("Press Ctrl+C at any time to stop the demo.\n")
+    
+    # Set up the board and AI players
+    wine.set_size(15)
+    wine.restart()
+    
+    # Initialize the display board
+    board = [[0 for _ in range(15)] for _ in range(15)]
+    moves_count = 0
+    
+    def draw_board():
+        """Draw the current board state"""
+        clear_screen()
+        print("\n===== COMPUTER VS COMPUTER DEMO =====\n")
+        print(f"Move count: {moves_count}")
+        print("Black (●): First AI   White (○): Second AI\n")
+        
+        for i in range(15):
+            for j in range(15):
+                # Print row numbers at the start of each row
+                if j == 0:
+                    if i + 1 < 10:
+                        print(" ", end="")
+                    print(i + 1, end=" ")
+                
+                # Print board content
+                if board[i][j] == 0:
+                    if i == 0:
+                        if j == 0:
+                            print("┌─", end="")
+                        elif j == 14:
+                            print("┐", end="")
+                        else:
+                            print("┬─", end="")
+                    elif i == 14:
+                        if j == 0:
+                            print("└─", end="")
+                        elif j == 14:
+                            print("┘", end="")
+                        else:
+                            print("┴─", end="")
+                    else:
+                        if j == 0:
+                            print("├─", end="")
+                        elif j == 14:
+                            print("┤", end="")
+                        else:
+                            print("┼─", end="")
+                elif board[i][j] == 1:
+                    print("● ", end="")
+                elif board[i][j] == 2:
+                    print("○ ", end="")
+            # New line at the end of each row
+            print()
+        print("  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O")
+        print("\nPress Ctrl+C to stop the demo.")
+    
+    try:
+        while True:
+            # First AI's move (Black)
+            result = wine.get_best_move()
+            # Save coordinates before they get modified by put_chess
+            display_x, display_y = result.x, result.y
+            wine.put_chess(result)
+            board[display_y][display_x] = 1  # Black piece
+            moves_count += 1
+            draw_board()
+            print(f"Black played: {chr(display_x + ord('a'))}{display_y + 1}")
+            
+            # Check for win
+            if wine.check_win():
+                print("\nBlack (First AI) wins the game!")
+                break
+            
+            # Short pause between moves
+            time.sleep(1.5)
+            
+            # Second AI's move (White)
+            result = wine.get_best_move()
+            # Save coordinates before they get modified by put_chess
+            display_x, display_y = result.x, result.y
+            wine.put_chess(result)
+            board[display_y][display_x] = 2  # White piece
+            moves_count += 1
+            draw_board()
+            print(f"White played: {chr(display_x + ord('a'))}{display_y + 1}")
+            
+            # Check for win
+            if wine.check_win():
+                print("\nWhite (Second AI) wins the game!")
+                break
+                
+            # Short pause between moves
+            time.sleep(1.5)
+            
+            # Check for full board (draw)
+            if moves_count >= 15 * 15:
+                print("\nGame ended in a draw!")
+                break
+                
+    except KeyboardInterrupt:
+        print("\nDemo stopped by user.")
+    
+    input("\nPress Enter to return to the main menu...")
+    show_welcome()#!/usr/bin/env python3
 import sys
 import time
 import os
@@ -66,7 +175,7 @@ class SimpleUI:
                     print("○ ", end="")
             # New line at the end of each row
             print()
-        print("   A B C D E F G H I J K L M N O")
+        print("  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O")
         print("\nCommands: [coordinate] = make move (e.g. h8)")
         print("          'quit' = exit game, 'restart' = new game\n")
     
@@ -173,10 +282,18 @@ class SimpleUI:
                     print("\nGame interrupted. Exiting...")
                     self.is_end = True
                     continue
-            else:  # AI's turn
+            else:                  # AI's turn
                 print("Computer is thinking...")
+                # Set higher timeout for stronger play
+                original_timeout = wine.timeout_turn
+                wine.timeout_turn = 10000  # 10 seconds per move for stronger play
+                
                 result = wine.get_best_move()
                 wine.put_chess(result)
+                
+                # Restore original timeout
+                wine.timeout_turn = original_timeout
+                
                 self.add_chess(result.x, result.y)
                 print(f"Computer played: {chr(result.x + ord('a'))}{result.y + 1}")
             
@@ -192,35 +309,94 @@ def show_welcome():
     print("\nGame Modes:")
     print("1. Play against computer")
     print("2. Computer vs computer (demo)")
-    print("3. Enter Gomocup protocol mode")
-    print("4. Exit")
+    print("3. Generate training data")
+    print("4. Enter Gomocup protocol mode")
+    print("5. Exit")
     
     while True:
         try:
-            choice = input("\nSelect an option (1-4): ").strip()
+            choice = input("\nSelect an option (1-5): ").strip()
             if choice == '1':
                 ui = SimpleUI()
                 ui.run()
                 return
             elif choice == '2':
-                print("\nComputer vs computer demo mode is not implemented yet.")
-                input("Press Enter to return to menu...")
-                show_welcome()
+                computer_vs_computer_demo()
                 return
             elif choice == '3':
+                generate_training_data_menu()
+                return
+            elif choice == '4':
                 print("\nEntering Gomocup protocol mode...")
                 print("Type commands according to the Gomocup protocol.")
                 print("(Type 'END' to exit)\n")
                 gomocup()
                 return
-            elif choice == '4':
+            elif choice == '5':
                 print("\nThanks for playing! Goodbye.")
                 sys.exit(0)
             else:
-                print("Invalid choice. Please enter a number from 1 to 4.")
+                print("Invalid choice. Please enter a number from 1 to 5.")
         except KeyboardInterrupt:
             print("\nProgram interrupted. Exiting...")
             sys.exit(0)
+
+def generate_training_data_menu():
+    """Menu for generating training data"""
+    from data_generator import generate_training_data, convert_to_numpy_format, convert_to_sparse_format
+    
+    clear_screen()
+    print("\n===== GENERATE TRAINING DATA =====\n")
+    print("This will generate self-play games for AI training.")
+    
+    try:
+        num_games = int(input("\nNumber of games to generate [100]: ") or "100")
+        if num_games <= 0:
+            print("Number of games must be positive. Using default of 100.")
+            num_games = 100
+            
+        num_processes = int(input("Number of parallel processes (0=auto) [0]: ") or "0")
+        if num_processes < 0:
+            print("Number of processes can't be negative. Using auto detection.")
+            num_processes = None
+        elif num_processes == 0:
+            num_processes = None
+            
+        output_dir = input("Output directory [gomoku_data]: ") or "gomoku_data"
+        
+        print("\nGenerating data...")
+        total_examples = generate_training_data(
+            num_games=num_games, 
+            output_dir=output_dir,
+            num_processes=num_processes
+        )
+        
+        if total_examples > 0:
+            print("\nData format options:")
+            print("1. Full Board NumPy Format (15x15 grid, ML-friendly)")
+            print("2. Sparse Format (Original format, preserved structure)")
+            print("3. Both formats")
+            print("4. Skip conversion")
+            
+            choice = input("\nSelect format [1]: ") or "1"
+            
+            output_file = input("Output filename base [gomoku_dataset]: ") or "gomoku_dataset"
+            
+            if choice == "1" or choice == "3":
+                convert_to_numpy_format(input_dir=output_dir, output_file=output_file)
+            
+            if choice == "2" or choice == "3":
+                convert_to_sparse_format(input_dir=output_dir, output_file=f"{output_file}_sparse")
+    
+    except ValueError as e:
+        print(f"Invalid input: {e}")
+    except KeyboardInterrupt:
+        print("\nProcess interrupted.")
+    except Exception as e:
+        print(f"Error: {e}")
+    
+    input("\nPress Enter to return to the main menu...")
+    show_welcome()
 
 def gomocup():
     """Handle Gomocup protocol"""

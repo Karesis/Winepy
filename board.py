@@ -16,7 +16,7 @@ MAX_MOVES = 40   # Maximum number of moves per layer
 HASH_SIZE = 1 << 22  # Normal hash table size
 PVS_SIZE = 1 << 20   # PVS hash table size
 MAX_DEPTH = 20   # Maximum search depth
-MIN_DEPTH = 2    # Minimum search depth
+MIN_DEPTH = 4    # Minimum search depth (increased from 2)
 
 # Hash related constants
 HASH_EXACT = 0

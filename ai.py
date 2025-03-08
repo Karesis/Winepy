@@ -16,8 +16,8 @@ class AI(Board):
         self.best_line = Line()
         self.start = 0
         self.stop_think = False
-        # Evaluation values for different patterns
-        self.eval = [0, 2, 12, 18, 96, 144, 800, 1200]
+        # Evaluation values for different patterns - increased weights for stronger play
+        self.eval = [0, 3, 15, 30, 100, 200, 1000, 2000]
 
     def get_time(self):
         """Return elapsed search time in milliseconds"""
@@ -25,7 +25,7 @@ class AI(Board):
 
     def stop_time(self):
         """Return available search time for this move"""
-        return min(self.timeout_turn, self.time_left // 7)
+        return min(self.timeout_turn, self.time_left // 5)  # Allow more time per move (changed from 7)
 
     def probe_hash(self, depth, alpha, beta):
         """Query the transposition table"""
@@ -86,6 +86,11 @@ class AI(Board):
         
         # Second and third moves randomly around first move
         if self.step == 1 or self.step == 2:
+            # Check for diagonal threat from corner
+            if self.check_diagonal_threat():
+                # Return the blocking move
+                return self.block_diagonal_threat()
+                
             rx, ry = 0, 0
             random.seed(time.time())
             while True:
@@ -117,6 +122,69 @@ class AI(Board):
         best_move = self.best_point.p
         
         return best_move
+        
+    def check_diagonal_threat(self):
+        """Check for diagonal threat from corner"""
+        # Check if opponent has pieces forming a diagonal from corner
+        diagonal_count = 0
+        diagonal_pieces = []
+        
+        # Check top-left to bottom-right diagonal
+        for i in range(4, self.b_end):
+            if self.cell[i][i].piece == self.opp:
+                diagonal_count += 1
+                diagonal_pieces.append((i, i))
+            elif self.cell[i][i].piece != Pieces.EMPTY.value:
+                break
+                
+        if diagonal_count >= 2:
+            return True
+            
+        # Check top-right to bottom-left diagonal
+        diagonal_count = 0
+        size_plus_8 = self.size + 8
+        for i in range(4, self.b_end):
+            if self.cell[i][size_plus_8 - i - 1].piece == self.opp:
+                diagonal_count += 1
+            elif self.cell[i][size_plus_8 - i - 1].piece != Pieces.EMPTY.value:
+                break
+                
+        if diagonal_count >= 2:
+            return True
+            
+        return False
+        
+    def block_diagonal_threat(self):
+        """Return move to block diagonal threat"""
+        blocking_move = Pos()
+        
+        # Check top-left to bottom-right diagonal
+        for i in range(4, self.b_end):
+            if self.cell[i][i].piece == Pieces.EMPTY.value and self.cell[i-1][i-1].piece == self.opp:
+                blocking_move.x = i
+                blocking_move.y = i
+                return blocking_move
+                
+        # Check top-right to bottom-left diagonal
+        size_plus_8 = self.size + 8
+        for i in range(4, self.b_end):
+            if (self.cell[i][size_plus_8 - i - 1].piece == Pieces.EMPTY.value and 
+                self.cell[i-1][size_plus_8 - i].piece == self.opp):
+                blocking_move.x = i
+                blocking_move.y = size_plus_8 - i - 1
+                return blocking_move
+                
+        # Fallback - block the end of the diagonal
+        for i in range(4, self.b_end):
+            if self.cell[i][i].piece == self.opp and self.cell[i+1][i+1].piece == Pieces.EMPTY.value:
+                blocking_move.x = i+1
+                blocking_move.y = i+1
+                return blocking_move
+                
+        # Default center move if no specific block found
+        blocking_move.x = self.size // 2 + 4
+        blocking_move.y = self.size // 2 + 4
+        return blocking_move
 
     def root_search(self, depth, alpha, beta, pline):
         """Root node search with additional move ordering"""
@@ -342,7 +410,7 @@ class AI(Board):
             for j in range(self.b_start, self.b_end):
                 if (self.cell[i][j].is_cand > 0 and 
                     self.cell[i][j].piece == Pieces.EMPTY.value):
-                    val = self.evaluate_move(self.cell[i][j])
+                    val = self.evaluate_move(self.cell[i][j], i, j)  # Pass coordinates
                     if val > 0:
                         self.cand[cand_count] = Point(Pos(i, j), val)
                         cand_count += 1
@@ -400,6 +468,9 @@ class AI(Board):
         # If opponent cannot win and own side has an active four, win
         if opp_type[WIN] == 0 and who_type[FLEX4] >= 1:
             return 10000
+        # If opponent has an active four, prioritize blocking it
+        if opp_type[FLEX4] >= 1:
+            return -9000
         
         # Calculate score
         who_score = 0
@@ -408,14 +479,28 @@ class AI(Board):
             who_score += who_type[i] * self.eval[i]
             opp_score += opp_type[i] * self.eval[i]
         
-        # Own side's patterns are more powerful (multiplier 1.2)
-        return who_score * 1.2 - opp_score
+        # Own side's patterns are more powerful (multiplier 1.3)
+        return who_score * 1.3 - opp_score
 
-    def evaluate_move(self, c):
+    def evaluate_move(self, c, x=None, y=None):
         """Evaluate a specific move"""
         score = [0, 0]
         score[self.who] = self.pval[c.pattern[self.who][0]][c.pattern[self.who][1]][c.pattern[self.who][2]][c.pattern[self.who][3]]
         score[self.opp] = self.pval[c.pattern[self.opp][0]][c.pattern[self.opp][1]][c.pattern[self.opp][2]][c.pattern[self.opp][3]]
+        
+        # Check if this move is on a diagonal from corner and gives bonus points
+        # Only check if coordinates are provided
+        if x is not None and y is not None:
+            for i in range(4):
+                if c.pattern[self.opp][i] >= FLEX2:  # If opponent can form at least two in a row
+                    # Find the coordinates
+                    dir_x, dir_y = dx[i], dy[i]
+                    if dir_x == 1 and dir_y == 1:  # Diagonal
+                        # Check if near corner
+                        if abs(x - 4) <= 5 and abs(y - 4) <= 5:  # Near top-left
+                            score[self.opp] += 50  # Bonus for blocking diagonal threat
+                        elif abs(x - (self.size + 4 - 1)) <= 5 and abs(y - 4) <= 5:  # Near top-right
+                            score[self.opp] += 50
         
         # If score >= 200 (double active three or better), return the higher score
         if score[self.who] >= 200 or score[self.opp] >= 200:
