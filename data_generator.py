@@ -172,7 +172,7 @@ def convert_to_numpy_format(input_dir="training_data", output_file="gomoku_datas
     # Pre-allocate arrays for efficiency (using full board representation)
     # 15x15=225 positions, each can be -1 (white), 0 (empty), or 1 (black)
     X = np.zeros((total_examples, 15, 15), dtype=np.int8)
-    y = np.zeros(total_examples, dtype=np.int16)
+    Y = np.zeros(total_examples, dtype=np.int16)
     
     # Second pass: fill the arrays
     example_index = 0
@@ -194,17 +194,17 @@ def convert_to_numpy_format(input_dir="training_data", output_file="gomoku_datas
             
             # Store the board and next move
             X[example_index] = board
-            y[example_index] = example["next_move"]
+            Y[example_index] = example["next_move"]
             
             example_index += 1
     
     # Save arrays
     np.save(f"{output_file}_X.npy", X)
-    np.save(f"{output_file}_y.npy", y)
+    np.save(f"{output_file}_y.npy", Y)
     
     print(f"Converted {total_examples} examples to numpy format")
-    print(f"X shape: {X.shape}, y shape: {y.shape}")
-    print(f"Data saved as {output_file}_X.npy and {output_file}_y.npy")
+    print(f"X shape: {X.shape}, Y shape: {Y.shape}")
+    print(f"Data saved as {output_file}_X.npy and {output_file}_Y.npy")
     
     return total_examples
 
@@ -233,11 +233,11 @@ def convert_to_sparse_format(input_dir="training_data", output_file="gomoku_spar
     with open(f"{output_file}_X.pkl", 'wb') as f:
         pickle.dump(all_states, f)
     
-    with open(f"{output_file}_y.pkl", 'wb') as f:
+    with open(f"{output_file}_Y.pkl", 'wb') as f:
         pickle.dump(all_moves, f)
     
     print(f"Converted {len(all_states)} examples to sparse format")
-    print(f"Data saved as {output_file}_X.pkl and {output_file}_y.pkl")
+    print(f"Data saved as {output_file}_X.pkl and {output_file}_Y.pkl")
     
     return len(all_states)
 
