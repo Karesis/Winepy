@@ -2,7 +2,7 @@
 
 WinePy is a Python implementation of the [Wine](https://github.com/jinjiebang/wine) Gomoku (Five in a Row) AI engine. This project enhances the original C++ implementation with improved AI algorithms, a user-friendly interface, and a data generation system for neural network training.
 
-![Gomoku Game](https://raw.githubusercontent.com/username/winepy/main/images/gomoku_game.png)
+![Gomoku Game](gomoku_game.png)
 
 ## Features
 
@@ -23,8 +23,7 @@ WinePy is a Python implementation of the [Wine](https://github.com/jinjiebang/wi
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/username/winepy.git
-   cd winepy
+   git clone https://github.com/Karesis/Winepy.git
    ```
 
 2. Install the required dependencies:
@@ -122,7 +121,7 @@ Contributions are welcome! Here are some ways you can contribute:
 ## Credits
 
 - Original Wine Gomoku AI: [Wine](https://github.com/jinjiebang/wine) by jinjiebang
-- Python implementation and enhancements: [Your Name]
+- Python implementation and enhancements: [Karesis]
 
 ## License
 
