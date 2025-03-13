@@ -10,6 +10,7 @@ WinePy是[Wine](https://github.com/jinjiebang/wine)五子棋AI引擎的Python实
 - 🎮 交互式控制台用户界面
 - 🤖 电脑对战电脑演示模式
 - 📊 用于机器学习模型的训练数据生成器
+- 🧠 预生成的[AI训练数据集](https://huggingface.co/datasets/Karesis/Gomoku)可在Hugging Face上获取
 - 🏆 支持Gomocup协议用于比赛
 
 ## 安装
@@ -107,6 +108,8 @@ AI识别并评估棋盘上的各种模式：
 2. 稀疏表示（带有着法历史的原始格式）
 
 每个训练样例由一个棋盘状态和AI确定的相应最佳着法组成。
+
+**预生成数据集**：一个包含875局游戏的26,378个样例的大型数据集可在[Hugging Face](https://huggingface.co/datasets/Karesis/Gomoku)上获取。该数据集被分为训练集（80%）和测试集（20%），已准备好用于机器学习实验。
 
 ## 贡献
 
