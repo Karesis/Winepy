@@ -124,7 +124,7 @@ AI识别并评估棋盘上的各种模式：
 ## 致谢
 
 - 原始Wine五子棋AI：jinjiebang的[Wine](https://github.com/jinjiebang/wine)
-- Python实现和增强：[杨亦锋]
+- Python实现和增强：杨亦锋
 
 ## 许可证
 
