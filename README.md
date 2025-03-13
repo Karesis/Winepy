@@ -10,6 +10,7 @@ WinePy is a Python implementation of the [Wine](https://github.com/jinjiebang/wi
 - 🎮 Interactive console-based user interface
 - 🤖 Computer vs. computer demonstration mode
 - 📊 Training data generator for machine learning models
+- 🧠 Pre-generated [AI training dataset](https://huggingface.co/datasets/Karesis/Gomoku) available on Hugging Face
 - 🏆 Supports Gomocup protocol for competition
 
 ## Installation
@@ -107,6 +108,8 @@ The data generator creates training examples in two formats:
 2. Sparse representation (original format with move history)
 
 Each training example consists of a board state and the corresponding optimal move as determined by the AI.
+
+**Pre-generated Dataset**: A large dataset of 26,378 examples from 875 games is available on [Hugging Face](https://huggingface.co/datasets/Karesis/Gomoku). This dataset is split into training (80%) and test (20%) sets and is ready for machine learning experiments.
 
 ## Contributing
 
