@@ -200,7 +200,7 @@ def convert_to_numpy_format(input_dir="training_data", output_file="gomoku_datas
     
     # Save arrays
     np.save(f"{output_file}_X.npy", X)
-    np.save(f"{output_file}_y.npy", Y)
+    np.save(f"{output_file}_Y.npy", Y)
     
     print(f"Converted {total_examples} examples to numpy format")
     print(f"X shape: {X.shape}, Y shape: {Y.shape}")
